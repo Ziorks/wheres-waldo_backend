@@ -27,18 +27,17 @@ model Character {
   id         Int         @id @default(autoincrement())
   name       String
   avatar     String
-  location   Location    @relation(fields: [locationId], references: [id])
-  locationId Int         @unique
-  image      Image       @relation(fields: [imageId], references: [id])
+  objectives Objective[]
+  location   Location?
+  image      Image       @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId    Int
-  objective  Objective[]
 }
 
 model Location {
-  id        Int        @id @default(autoincrement())
-  x         Int
-  y         Int
-  character Character?
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  characterId Int       @unique
+  x           Int
+  y           Int
 }
 
 model Game {
@@ -47,16 +46,17 @@ model Game {
   endTime    DateTime?
   nGuesses   Int         @default(0)
   playerName String?
-  image      Image       @relation(fields: [imageId], references: [id])
+  image      Image       @relation(fields: [imageId], references: [id], onDelete: Restrict)
   imageId    Int
   objectives Objective[]
 }
 
 model Objective {
-  id          Int       @id
   found       Boolean   @default(false)
-  character   Character @relation(fields: [characterId], references: [id])
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Restrict)
   characterId Int
-  game        Game      @relation(fields: [gameId], references: [id])
+  game        Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
   gameId      Int
+
+  @@id([characterId, gameId])
 }
