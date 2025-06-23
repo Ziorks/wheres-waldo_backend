@@ -13,3 +13,50 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Image {
+  id         Int         @id @default(autoincrement())
+  src        String
+  width      Int
+  height     Int
+  characters Character[]
+  games      Game[]
+}
+
+model Character {
+  id         Int         @id @default(autoincrement())
+  name       String
+  avatar     String
+  location   Location    @relation(fields: [locationId], references: [id])
+  locationId Int         @unique
+  image      Image       @relation(fields: [imageId], references: [id])
+  imageId    Int
+  objective  Objective[]
+}
+
+model Location {
+  id        Int        @id @default(autoincrement())
+  x         Int
+  y         Int
+  character Character?
+}
+
+model Game {
+  id         Int         @id @default(autoincrement())
+  startTime  DateTime?
+  endTime    DateTime?
+  nGuesses   Int         @default(0)
+  playerName String?
+  image      Image       @relation(fields: [imageId], references: [id])
+  imageId    Int
+  objectives Objective[]
+}
+
+model Objective {
+  id          Int       @id
+  found       Boolean   @default(false)
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId Int
+  game        Game      @relation(fields: [gameId], references: [id])
+  gameId      Int
+}
