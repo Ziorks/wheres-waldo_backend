@@ -14,4 +14,134 @@ const prisma = new PrismaClient({
   },
 });
 
-module.exports = {};
+async function getAllImages() {
+  const images = await prisma.image.findMany({
+    omit: {
+      vector2dId: true,
+    },
+  });
+  return images;
+}
+
+async function getImageCharacterIds(imageId) {
+  const image = await prisma.image.findUnique({
+    where: {
+      id: imageId,
+    },
+    select: {
+      characters: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+  return image.characters.map((character) => ({
+    characterId: character.id,
+  }));
+}
+
+async function getGame(gameId) {
+  const game = await prisma.game.findUnique({
+    where: {
+      id: gameId,
+    },
+    include: {
+      objectives: {
+        include: {
+          character: {
+            include: {
+              location: {
+                omit: {
+                  id: true,
+                },
+              },
+            },
+            omit: {
+              vector2dId: true,
+              imageId: true,
+            },
+          },
+        },
+        omit: {
+          gameId: true,
+          characterId: true,
+        },
+      },
+      image: {
+        include: {
+          percentGuessTolerance: {
+            omit: {
+              id: true,
+            },
+          },
+        },
+        omit: {
+          vector2dId: true,
+        },
+      },
+    },
+    omit: {
+      imageId: true,
+    },
+  });
+
+  return game;
+}
+
+async function updateGame(
+  gameId,
+  { startTime, endTime, nGuesses, playerName }
+) {
+  await prisma.game.update({
+    where: {
+      id: gameId,
+    },
+    data: {
+      startTime,
+      endTime,
+      nGuesses,
+      playerName,
+    },
+  });
+}
+
+async function createGame(imageId) {
+  const game = await prisma.game.create({
+    data: {
+      imageId,
+    },
+  });
+  return game;
+}
+
+async function createObjectives(gameId, characterIds) {
+  characterIds = characterIds.map((id) => ({ ...id, gameId }));
+  await prisma.objective.createMany({
+    data: characterIds,
+  });
+}
+
+async function updateObjective(gameId, characterId, { found }) {
+  await prisma.objective.update({
+    where: {
+      characterId_gameId: {
+        characterId,
+        gameId,
+      },
+    },
+    data: {
+      found,
+    },
+  });
+}
+
+module.exports = {
+  getAllImages,
+  getImageCharacterIds,
+  getGame,
+  createGame,
+  updateGame,
+  createObjectives,
+  updateObjective,
+};

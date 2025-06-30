@@ -46,7 +46,7 @@ model Vector2d {
 
 model Game {
   id         Int         @id @default(autoincrement())
-  startTime  DateTime?
+  startTime  DateTime    @default(now())
   endTime    DateTime?
   nGuesses   Int         @default(0)
   playerName String?
