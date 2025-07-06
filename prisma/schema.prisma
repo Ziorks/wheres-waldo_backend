@@ -50,6 +50,7 @@ model Game {
   endTime    DateTime?
   nGuesses   Int         @default(0)
   playerName String?
+  time       Int?
   image      Image       @relation(fields: [imageId], references: [id], onDelete: Restrict)
   imageId    Int
   objectives Objective[]

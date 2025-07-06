@@ -41,6 +41,35 @@ async function getImageCharacterIds(imageId) {
   }));
 }
 
+async function getLeaderboard(imageId) {
+  const leaderboard = await prisma.image.findUnique({
+    where: {
+      id: imageId,
+    },
+    select: {
+      games: {
+        where: {
+          NOT: {
+            playerName: null,
+            time: null,
+          },
+        },
+        select: {
+          playerName: true,
+          time: true,
+        },
+        orderBy: {
+          time: {
+            sort: "asc",
+          },
+        },
+      },
+    },
+  });
+
+  return leaderboard;
+}
+
 async function getGame(gameId) {
   const game = await prisma.game.findUnique({
     where: {
@@ -91,7 +120,7 @@ async function getGame(gameId) {
 
 async function updateGame(
   gameId,
-  { startTime, endTime, nGuesses, playerName }
+  { startTime, endTime, nGuesses, playerName, time }
 ) {
   await prisma.game.update({
     where: {
@@ -102,6 +131,7 @@ async function updateGame(
       endTime,
       nGuesses,
       playerName,
+      time,
     },
   });
 }
@@ -139,6 +169,7 @@ async function updateObjective(gameId, characterId, { found }) {
 module.exports = {
   getAllImages,
   getImageCharacterIds,
+  getLeaderboard,
   getGame,
   createGame,
   updateGame,

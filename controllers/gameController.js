@@ -38,6 +38,7 @@ const guessPost = async (req, res) => {
   const { x: xGuess, y: yGuess, characterId } = req.body;
   const { gameId } = req.params;
   const game = await db.getGame(+gameId);
+  //probably do this in validation
   if (game.endTime) {
     return res.status(400).json({ message: "The game has ended" });
   }
@@ -78,4 +79,9 @@ const guessPost = async (req, res) => {
   return res.redirect(`/game/${gameId}`);
 };
 
-module.exports = { allImagesGet, newGamePost, gameGet, guessPost };
+module.exports = {
+  allImagesGet,
+  newGamePost,
+  gameGet,
+  guessPost,
+};
