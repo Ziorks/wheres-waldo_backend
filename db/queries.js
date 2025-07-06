@@ -77,7 +77,8 @@ async function getGame(gameId) {
     },
     include: {
       objectives: {
-        include: {
+        select: {
+          found: true,
           character: {
             include: {
               location: {
@@ -92,9 +93,8 @@ async function getGame(gameId) {
             },
           },
         },
-        omit: {
-          gameId: true,
-          characterId: true,
+        orderBy: {
+          characterId: "asc",
         },
       },
       image: {
