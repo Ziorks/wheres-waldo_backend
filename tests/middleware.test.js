@@ -1,6 +1,7 @@
 const request = require("supertest");
 const express = require("express");
 const { notFoundHandler, errorHandler } = require("../middleware");
+const { describe, it } = require("@jest/globals");
 
 const errorMsg = "this is a test error";
 
@@ -12,10 +13,20 @@ app.get("/", (req, res) => {
 app.use("*splat", notFoundHandler);
 app.use(errorHandler);
 
-test("not found works", (done) => {
-  request(app).get("/any").expect(404, done);
-});
+describe("middleware", () => {
+  describe("not found hadler", () => {
+    describe("given an undefined route is requested", () => {
+      it("should return a 404 status", (done) => {
+        request(app).get("/any").expect(404, done);
+      });
+    });
+  });
 
-test("error works", (done) => {
-  request(app).get("/").expect(500, { message: errorMsg }, done);
+  describe("error hadler", () => {
+    describe("given a route throws an unhandled error", () => {
+      it("should return a 500 status and message containing the error", (done) => {
+        request(app).get("/").expect(500, { message: errorMsg }, done);
+      });
+    });
+  });
 });

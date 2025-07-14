@@ -4,6 +4,7 @@ CREATE TABLE "Image" (
     "src" TEXT NOT NULL,
     "width" INTEGER NOT NULL,
     "height" INTEGER NOT NULL,
+    "vector2dId" INTEGER NOT NULL,
 
     CONSTRAINT "Image_pkey" PRIMARY KEY ("id")
 );
@@ -13,28 +14,29 @@ CREATE TABLE "Character" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "avatar" TEXT NOT NULL,
-    "locationId" INTEGER NOT NULL,
+    "vector2dId" INTEGER NOT NULL,
     "imageId" INTEGER NOT NULL,
 
     CONSTRAINT "Character_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Location" (
+CREATE TABLE "Vector2d" (
     "id" SERIAL NOT NULL,
     "x" INTEGER NOT NULL,
     "y" INTEGER NOT NULL,
 
-    CONSTRAINT "Location_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Vector2d_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Game" (
     "id" SERIAL NOT NULL,
-    "startTime" TIMESTAMP(3),
+    "startTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "endTime" TIMESTAMP(3),
     "nGuesses" INTEGER NOT NULL DEFAULT 0,
     "playerName" TEXT,
+    "time" INTEGER,
     "imageId" INTEGER NOT NULL,
 
     CONSTRAINT "Game_pkey" PRIMARY KEY ("id")
@@ -42,22 +44,21 @@ CREATE TABLE "Game" (
 
 -- CreateTable
 CREATE TABLE "Objective" (
-    "id" INTEGER NOT NULL,
     "found" BOOLEAN NOT NULL DEFAULT false,
     "characterId" INTEGER NOT NULL,
     "gameId" INTEGER NOT NULL,
 
-    CONSTRAINT "Objective_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Objective_pkey" PRIMARY KEY ("characterId","gameId")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "Character_locationId_key" ON "Character"("locationId");
+-- AddForeignKey
+ALTER TABLE "Image" ADD CONSTRAINT "Image_vector2dId_fkey" FOREIGN KEY ("vector2dId") REFERENCES "Vector2d"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Character" ADD CONSTRAINT "Character_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Character" ADD CONSTRAINT "Character_vector2dId_fkey" FOREIGN KEY ("vector2dId") REFERENCES "Vector2d"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Character" ADD CONSTRAINT "Character_imageId_fkey" FOREIGN KEY ("imageId") REFERENCES "Image"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Character" ADD CONSTRAINT "Character_imageId_fkey" FOREIGN KEY ("imageId") REFERENCES "Image"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Game" ADD CONSTRAINT "Game_imageId_fkey" FOREIGN KEY ("imageId") REFERENCES "Image"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -66,4 +67,4 @@ ALTER TABLE "Game" ADD CONSTRAINT "Game_imageId_fkey" FOREIGN KEY ("imageId") RE
 ALTER TABLE "Objective" ADD CONSTRAINT "Objective_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "Character"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Objective" ADD CONSTRAINT "Objective_gameId_fkey" FOREIGN KEY ("gameId") REFERENCES "Game"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Objective" ADD CONSTRAINT "Objective_gameId_fkey" FOREIGN KEY ("gameId") REFERENCES "Game"("id") ON DELETE CASCADE ON UPDATE CASCADE;

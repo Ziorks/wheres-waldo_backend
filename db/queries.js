@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { PrismaClient } = require("../generated/prisma");
+const { PrismaClient, Prisma } = require("../generated/prisma");
 
 const databaseUrl =
   process.env.NODE_ENV.trim() === "test"
@@ -21,6 +21,30 @@ async function getAllImages() {
     },
   });
   return images;
+}
+
+async function createImage({
+  src,
+  width,
+  height,
+  xPercentGuessTolerance,
+  yPercentGuessTolerance,
+}) {
+  const image = await prisma.image.create({
+    data: {
+      width,
+      height,
+      src,
+      percentGuessTolerance: {
+        create: {
+          x: xPercentGuessTolerance,
+          y: yPercentGuessTolerance,
+        },
+      },
+    },
+  });
+
+  return image;
 }
 
 async function getImageCharacterIds(imageId) {
@@ -166,8 +190,42 @@ async function updateObjective(gameId, characterId, { found }) {
   });
 }
 
+async function createCharacter({
+  avatar,
+  imageId,
+  name,
+  xLocation,
+  yLocation,
+}) {
+  const character = await prisma.character.create({
+    data: {
+      avatar,
+      image: { connect: { id: imageId } },
+      name,
+      location: {
+        create: {
+          x: xLocation,
+          y: yLocation,
+        },
+      },
+    },
+  });
+
+  return character;
+}
+
+async function resetDatabase() {
+  const tableNames = Object.values(Prisma.ModelName);
+  for (const tableName of tableNames) {
+    await prisma.$queryRawUnsafe(
+      `TRUNCATE TABLE "${tableName}" RESTART IDENTITY CASCADE`
+    );
+  }
+}
+
 module.exports = {
   getAllImages,
+  createImage,
   getImageCharacterIds,
   getLeaderboard,
   getGame,
@@ -175,4 +233,6 @@ module.exports = {
   updateGame,
   createObjectives,
   updateObjective,
+  createCharacter,
+  resetDatabase,
 };

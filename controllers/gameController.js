@@ -1,5 +1,5 @@
 const db = require("../db/queries");
-const { sampleSize } = require("lodash");
+const { sampleSize, isNumber, isInteger } = require("lodash");
 
 const allImagesGet = async (req, res) => {
   const images = await db.getAllImages();
@@ -8,8 +8,12 @@ const allImagesGet = async (req, res) => {
 };
 
 const newGamePost = async (req, res) => {
-  //TODO:add validation
   const { imageId } = req.body;
+  const images = await db.getAllImages();
+  const imageIds = images.map((image) => image.id);
+  if (!imageIds.includes(imageId)) {
+    return res.status(400).json({ message: "Invalid imageId" });
+  }
   const { id: gameId } = await db.createGame(+imageId);
   const allCharacterIds = await db.getImageCharacterIds(+imageId);
   const characterIds = sampleSize(allCharacterIds, 3);
@@ -21,6 +25,9 @@ const newGamePost = async (req, res) => {
 const gameGet = async (req, res) => {
   const { gameId } = req.params;
   const game = await db.getGame(+gameId);
+  if (!game) {
+    return res.sendStatus(404);
+  }
 
   //delete character location if not found
   game.objectives.forEach((objective) => {
@@ -34,25 +41,44 @@ const gameGet = async (req, res) => {
 
 const guessPost = async (req, res) => {
   const now = new Date();
-  //TODO: add validation
+
   const { x: xGuess, y: yGuess, characterId } = req.body;
+  if (!isInteger(xGuess) || !isInteger(yGuess) || !isInteger(characterId)) {
+    return res.status(400).json({
+      message:
+        "Body shoud be: { characterId:Integer, xGuess:Integer, yGuess:Integer }",
+    });
+  }
+
   const { gameId } = req.params;
   const game = await db.getGame(+gameId);
-  //probably do this in validation
+  if (!game) {
+    return res.status(400).json({ message: "That gameId doesn't exist" });
+  }
   if (game.endTime) {
-    return res.status(400).json({ message: "The game has ended" });
+    return res.status(403).json({ message: "The game has ended" });
   }
 
   //check guess details against game
   const { width, height } = game.image;
-  const { x: xPercent, y: yPercent } = game.image.percentGuessTolerance;
-  const xTolerance = (width * (xPercent / 100)) / 2;
-  const yTolerance = (height * (yPercent / 100)) / 2;
+  if (xGuess < 0 || xGuess > width || yGuess < 0 || yGuess > height) {
+    return res
+      .status(400)
+      .json({ message: "Guess coordinates out of image bounds" });
+  }
+
   const objectiveIndex = game.objectives.findIndex(
     (objective) => objective.character.id === +characterId
   );
+  if (objectiveIndex === -1) {
+    return res.status(400).json({ message: "Invalid characterId" });
+  }
+
   const character = game.objectives[objectiveIndex].character;
   const { x: xActual, y: yActual } = character.location;
+  const { x: xPercent, y: yPercent } = game.image.percentGuessTolerance;
+  const xTolerance = (width * (xPercent / 100)) / 2;
+  const yTolerance = (height * (yPercent / 100)) / 2;
 
   //if guess is correct update objective
   if (

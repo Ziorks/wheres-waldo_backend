@@ -19,21 +19,21 @@ model Image {
   src                   String
   width                 Int
   height                Int
-  characters            Character[]
-  games                 Game[]
   percentGuessTolerance Vector2d    @relation(fields: [vector2dId], references: [id], onDelete: Restrict)
   vector2dId            Int
+  games                 Game[]
+  characters            Character[]
 }
 
 model Character {
   id         Int         @id @default(autoincrement())
   name       String
   avatar     String
-  objectives Objective[]
-  location   Vector2d    @relation(fields: [vector2dId], references: [id])
+  location   Vector2d    @relation(fields: [vector2dId], references: [id], onDelete: Restrict)
   vector2dId Int
   image      Image       @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId    Int
+  objectives Objective[]
 }
 
 model Vector2d {
