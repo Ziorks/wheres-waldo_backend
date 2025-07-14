@@ -29,6 +29,7 @@ async function main() {
 
   const image = await prisma.image.create({
     data: {
+      name: "Videogame Icons",
       src: "https://res.cloudinary.com/dwf29bnr3/image/upload/v1750737349/evbkszblprjybz0bvhqg.jpg",
       width: 3631,
       height: 2336,

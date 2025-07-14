@@ -24,6 +24,7 @@ async function getAllImages() {
 }
 
 async function createImage({
+  name,
   src,
   width,
   height,
@@ -32,6 +33,7 @@ async function createImage({
 }) {
   const image = await prisma.image.create({
     data: {
+      name,
       width,
       height,
       src,

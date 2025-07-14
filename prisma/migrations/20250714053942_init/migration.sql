@@ -1,6 +1,7 @@
 -- CreateTable
 CREATE TABLE "Image" (
     "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
     "src" TEXT NOT NULL,
     "width" INTEGER NOT NULL,
     "height" INTEGER NOT NULL,

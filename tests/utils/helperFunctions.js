@@ -8,6 +8,7 @@ const createImage = async () => {
   const yPercentGuessTolerance = simpleFaker.number.int({ max: height });
 
   const imagePayload = {
+    name: simpleFaker.string.alpha(15),
     src: simpleFaker.string.alpha(10),
     width,
     height,

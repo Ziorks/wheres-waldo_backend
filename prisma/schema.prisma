@@ -16,6 +16,7 @@ datasource db {
 
 model Image {
   id                    Int         @id @default(autoincrement())
+  name                  String
   src                   String
   width                 Int
   height                Int
