@@ -1,15 +1,20 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const indexRouter = require("./routes/indexRouter");
+const gameRouter = require("./routes/gameRouter");
+const leaderboardRouter = require("./routes/leaderboardRouter");
+const { notFoundHandler, errorHandler } = require("./middleware");
 
 const app = express();
 
 app.use(cors());
-app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.use("/", indexRouter);
+app.use("/game", gameRouter);
+app.use("/leaderboard", leaderboardRouter);
+app.use("*splat", notFoundHandler);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

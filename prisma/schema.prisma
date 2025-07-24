@@ -15,37 +15,43 @@ datasource db {
 }
 
 model Image {
-  id         Int         @id @default(autoincrement())
-  src        String
-  width      Int
-  height     Int
-  characters Character[]
-  games      Game[]
+  id                    Int         @id @default(autoincrement())
+  name                  String
+  src                   String
+  width                 Int
+  height                Int
+  percentGuessTolerance Vector2d    @relation(fields: [vector2dId], references: [id], onDelete: Restrict)
+  vector2dId            Int
+  games                 Game[]
+  characters            Character[]
 }
 
 model Character {
   id         Int         @id @default(autoincrement())
   name       String
   avatar     String
-  objectives Objective[]
-  location   Location?
+  location   Vector2d    @relation(fields: [vector2dId], references: [id], onDelete: Restrict)
+  vector2dId Int
   image      Image       @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId    Int
+  objectives Objective[]
 }
 
-model Location {
-  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  characterId Int       @unique
-  x           Int
-  y           Int
+model Vector2d {
+  id         Int         @id @default(autoincrement())
+  x          Int
+  y          Int
+  images     Image[]
+  characters Character[]
 }
 
 model Game {
   id         Int         @id @default(autoincrement())
-  startTime  DateTime?
+  startTime  DateTime    @default(now())
   endTime    DateTime?
   nGuesses   Int         @default(0)
   playerName String?
+  time       Int?
   image      Image       @relation(fields: [imageId], references: [id], onDelete: Restrict)
   imageId    Int
   objectives Objective[]
